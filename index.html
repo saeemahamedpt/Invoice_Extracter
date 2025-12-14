@@ -1,0 +1,38 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Request Form</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    form { max-width: 400px; margin: auto; padding: 1rem; border: 1px solid #ccc; border-radius: 8px; }
+    label { display: block; margin-top: 1rem; font-weight: bold; }
+    input[type="text"], input[type="file"] { width: 100%; padding: 0.5rem; margin-top: 0.5rem; }
+    button { margin-top: 1rem; padding: 0.6rem 1rem; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Submit Request</h1>
+  <form id="requestForm">
+    <label for="employeeId">Employee ID</label>
+    <input id="employeeId" name="employeeId" type="text" required />
+
+    <label for="requestNumber">Request Number</label>
+    <input id="requestNumber" name="requestNumber" type="text" required />
+
+    <label for="attachment">Attachment</label>
+    <input id="attachment" name="attachment" type="file" required />
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <script>
+    document.getElementById('requestForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      alert('Form submitted! (Backend integration coming soon)');
+    });
+  </script>
+</body>
+</html>
