@@ -42,8 +42,7 @@ module.exports = async function (context, req) {
         fileBase64
       },
       {
-        headers: { 'Content-Type': 'application/json' },
-        timeout: 30000
+        headers: { 'Content-Type': 'application/json' }
       }
     );
 
