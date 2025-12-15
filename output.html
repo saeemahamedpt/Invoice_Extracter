@@ -1,0 +1,175 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Structured Result</title>
+  <style>
+    /* Minimal styling aligned with main index page */
+    :root {
+      --bg-0: #0b0f1c; --bg-1: #12182a; --bg-2: #0a0f23;
+      --text: #eaf2ff; --muted: #a4b1c8;
+      --panel-bg: rgba(255,255,255,0.06);
+      --panel-border: rgba(255,255,255,0.18);
+      --danger: #d3222a;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg-0: #f6f8ff; --bg-1: #eef2ff; --bg-2: #e6ebff;
+        --text: #141a2f; --muted: #566184;
+        --panel-bg: rgba(240, 244, 255, 0.85);
+        --panel-border: rgba(124, 77, 255, 0.25);
+      }
+    }
+    html, body {
+      height: 100%;
+      background: radial-gradient(1200px 800px at 10% 10%, var(--bg-1) 0%, var(--bg-0) 40%, var(--bg-2) 100%);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+      line-height: 1.5; margin: 0;
+    }
+    .wrap { max-width: 960px; margin: 6vh auto; padding: 16px; }
+    .panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 14px;
+      padding: 16px;
+    }
+    h1 { margin-top: 0; font-size: 1.25rem; }
+    .summary-grid {
+      display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+    .summary-item { display: grid; gap: 4px; padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); }
+    .label { font-size: 0.8rem; color: var(--muted); }
+    .value { font-weight: 600; }
+    .deviation {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px; border-radius: 10px; margin: 12px 0;
+      background: rgba(211,34,42,0.08);
+      border: 1px solid rgba(211,34,42,0.35);
+    }
+    .deviation .icon { width: 28px; height: 28px; color: var(--danger); }
+    .table { width: 100%; border-collapse: collapse; border-radius: 10px; overflow: hidden; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); }
+    .table th, .table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .table th { font-size: 0.85rem; color: var(--muted); background: rgba(255,255,255,0.04); }
+    .approved { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+    .tick { color: #18c37e; } .cross { color: var(--danger); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Structured Result</h1>
+    <section id="outPanel" class="panel" aria-label="Parsed result">
+      Loading structured view…
+    </section>
+  </div>
+
+  <script>
+    const el = document.getElementById('outPanel');
+
+    const escapeHTML = (str) => {
+      if (str == null) return '-';
+      return String(str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    };
+
+    const fmtAmt = (n, currencyText) => {
+      if (typeof n !== 'number') return '-';
+      const s = n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+      return currencyText ? `${s} ${currencyText}` : s;
+    };
+
+    const tickSVG = '<svg class="tick" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M9.0 16.2L4.8 12l-1.4 1.4 5.6 5.6L21 7l-1.4-1.4z"/></svg>';
+    const crossSVG = '<svg class="cross" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M18.3 5.71 12 12l6.3 6.29-1.41 1.41L10.59 13.41 4.3 19.7 2.89 18.29 9.17 12 2.89 5.71 4.3 4.3l6.29 6.29 6.29-6.29z"/></svg>';
+
+    function render(data) {
+      const res = data.result || {};
+      const currencyText = res['Currency'] || res.Authenticity?.DocumentMetadata?.Currency;
+
+      const schoolName = res['School Name'] || res.Authenticity?.DocumentMetadata?.Issuer || '-';
+      const depName    = res['Dependents Name'] || '-';
+      const term       = res.Authenticity?.DocumentMetadata?.['Academic Year'] || res['Term'] || '';
+      const amtWords   = res.Authenticity?.DocumentMetadata?.AmountInWords || '-';
+
+      const invoiceTotal   = res.Deviation?.InvoiceTotal ?? res['Total Fee'];
+      const approvedTotal  = res['TotalFeeApp'];
+      const hasDeviation   = !!res.Deviation?.HasDeviation;
+      const difference     = res.Deviation?.Difference;
+      const notes          = res.Authenticity?.ValidationChecks?.Notes;
+
+      const items = Array.isArray(res['Fee Items']) ? res['Fee Items'] : [];
+
+      const headerHTML = `
+        <div class="summary-grid">
+          <div class="summary-item"><span class="label">School Name</span><span class="value">${escapeHTML(schoolName)}</span></div>
+          <div class="summary-item"><span class="label">Dependent's Name</span><span class="value">${escapeHTML(depName)}</span></div>
+          ${term ? `<div class="summary-item"><span class="label">Academic Year / Term</span><span class="value">${escapeHTML(term)}</span></div>` : ''}
+          <div class="summary-item"><span class="label">Total Amount (Invoice)</span><span class="value">${fmtAmt(invoiceTotal, currencyText)}</span></div>
+          <div class="summary-item"><span class="label">Approved Total</span><span class="value">${fmtAmt(approvedTotal, currencyText)}</span></div>
+          <div class="summary-item"><span class="label">Amount (in words)</span><span class="value">${escapeHTML(amtWords)}</span></div>
+        </div>
+      `;
+
+      const deviationHTML = hasDeviation ? `
+        <div class="deviation" role="alert" aria-live="polite">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="11" fill="none" stroke="currentColor" stroke-width="2"></circle>
+            <path d="M8 8l8 8M16 8l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+          </svg>
+          <div class="text">
+            Deviation detected: Difference = ${fmtAmt(difference, currencyText)}.
+            ${notes ? `<div class="help" style="margin-top:4px;">${escapeHTML(notes)}</div>` : ''}
+          </div>
+        </div>
+      ` : '';
+
+      const rowsHTML = items.map(i => {
+        const name = i['Item Name'];
+        const amt  = i['Item Amount'];
+        const ex   = (i['ExcludeFlag'] || '').toUpperCase() === 'Y';
+        const approvedLabel = ex ? 'Excluded' : 'Approved';
+        const icon = ex ? crossSVG : tickSVG;
+        const iconClass = ex ? 'cross' : 'tick';
+        const aria = ex ? 'Not approved (excluded)' : 'Approved (included)';
+        return `
+          <tr>
+            <td>${escapeHTML(name)}</td>
+            <td>${fmtAmt(Number(amt), currencyText)}</td>
+            <td><span class="approved ${iconClass}" aria-label="${aria}" title="${approvedLabel}">${icon} ${approvedLabel}</span></td>
+          </tr>`;
+      }).join('');
+
+      const tableHTML = `
+        <div style="margin-top: 6px;">
+          <table class="table" role="table" aria-label="Fee items">
+            <thead>
+              <tr><th scope="col">Fee Item Name</th><th scope="col">Fee Item Amount</th><th scope="col">Approved</th></tr>
+            </thead>
+            <tbody>${rowsHTML || `<tr><td colspan="3">No fee items found.</td></tr>`}</tbody>
+          </table>
+        </div>
+      `;
+
+      el.innerHTML = headerHTML + deviationHTML + tableHTML;
+    }
+
+    (function init() {
+      const txt = sessionStorage.getItem('lastResponse');
+      if (!txt) {
+        el.innerHTML = 'No response data found in sessionStorage. Go back and click "Open structured view" after a successful submission.';
+        return;
+      }
+      try {
+        const data = JSON.parse(txt);
+        render(data);
+      } catch (err) {
+        console.error('[output.html] Parse error:', err);
+        el.innerHTML = 'Could not parse response JSON.';
+      }
+    })();
+  </script>
+</body>
+</html>
