@@ -43,8 +43,8 @@ module.exports = async function (context, req) {
       },
       {
         // If upstream sends text/plain, we still capture it
-        validateStatus: () => true, // don't throw for non-2xx; we handle below
-        timeout: 30000
+        validateStatus: () => true // don't throw for non-2xx; we handle below
+        // timeout: 30000
       }
     );
 
