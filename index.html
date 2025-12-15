@@ -34,8 +34,11 @@
       --console-bg: rgba(4, 8, 18, 0.75);
       --console-border: rgba(0, 229, 255, 0.4);
 
+      --panel-bg: rgba(255,255,255,0.06);
+      --panel-border: rgba(255,255,255,0.18);
+
       --ring: #00ffa3;
-      --danger: #c00;
+      --danger: #d3222a;
       --success: #0a7;
 
       --shadow-1: 0 10px 30px rgba(124, 77, 255, 0.25);
@@ -60,6 +63,9 @@
 
         --console-bg: rgba(240, 244, 255, 0.9);
         --console-border: rgba(124, 77, 255, 0.35);
+
+        --panel-bg: rgba(240, 244, 255, 0.85);
+        --panel-border: rgba(124, 77, 255, 0.25);
 
         --btn-text: #0f1330;
       }
@@ -110,7 +116,7 @@
 
     .card {
       width: 100%;
-      max-width: 720px;
+      max-width: 920px;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       backdrop-filter: blur(14px) saturate(140%);
@@ -163,24 +169,18 @@
       gap: 18px;
     }
 
-    /* ======= Form Enhancements (Floating labels, focus, spacing) ======= */
+    /* ======= Form Enhancements ======= */
     .form-shell {
       display: grid;
       gap: 16px;
       margin-top: 8px;
     }
 
-    .field {
-      position: relative;
-      display: grid;
-      gap: 8px;
-    }
+    .field { position: relative; display: grid; gap: 8px; }
 
-    /* Keep native label but position as floating */
     .field label {
       position: absolute;
-      top: 12px;
-      left: 14px;
+      top: 12px; left: 14px;
       padding: 0 6px;
       border-radius: 6px;
       color: var(--muted);
@@ -190,8 +190,7 @@
       pointer-events: none;
     }
 
-    .field input[type="text"],
-    .field input[type="file"] {
+    .field input[type="text"], .field input[type="file"] {
       width: 100%;
       padding: 16px 14px;
       border-radius: 10px;
@@ -202,118 +201,139 @@
       transition: box-shadow 160ms ease, border-color 160ms ease, background 160ms ease;
     }
 
-    /* Floating label mechanics */
-    .field:focus-within label,
-    .field.has-value label {
-      top: -8px;
-      transform: scale(0.86);
-      color: var(--accent-1);
+    .field:focus-within label, .field.has-value label {
+      top: -8px; transform: scale(0.86); color: var(--accent-1);
     }
 
-    /* Inner glow on focus */
     .field:focus-within input {
       border-color: var(--field-focus);
       box-shadow: inset 0 0 12px rgba(124, 77, 255, 0.15), 0 0 0 3px rgba(0, 229, 255, 0.18);
     }
 
-    /* Help text */
-    .help {
-      font-size: 0.8rem;
-      color: var(--muted);
-      padding-left: 4px;
-    }
+    .help { font-size: 0.8rem; color: var(--muted); padding-left: 4px; }
 
-    /* Button */
-    .actions {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      margin-top: 4px;
-    }
-
+    .actions { display: flex; gap: 12px; align-items: center; margin-top: 4px; }
     button[type="submit"] {
-      appearance: none;
-      border: none;
-      border-radius: 12px;
-      padding: 12px 18px;
-      font-weight: 700;
-      cursor: pointer;
+      appearance: none; border: none; border-radius: 12px; padding: 12px 18px; font-weight: 700; cursor: pointer;
       color: var(--btn-text);
       background: linear-gradient(135deg, var(--btn-grad-start), var(--btn-grad-end));
       box-shadow: var(--shadow-2);
       transition: transform 120ms ease, box-shadow 200ms ease, filter 160ms ease;
-      position: relative;
-      overflow: hidden;
+      position: relative; overflow: hidden;
     }
-
     button[type="submit"]::before {
-      /* soft holographic sheen */
-      content: "";
-      position: absolute;
-      inset: 0;
+      content: ""; position: absolute; inset: 0;
       background: linear-gradient(120deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.05) 40%, rgba(255,255,255,0.25) 70%, rgba(255,255,255,0.05) 100%);
-      opacity: 0.25;
-      transform: translateX(-100%);
-      transition: transform 600ms ease;
+      opacity: 0.25; transform: translateX(-100%); transition: transform 600ms ease;
     }
-
     button[type="submit"]:hover::before { transform: translateX(0); }
     button[type="submit"]:hover { filter: brightness(1.06) saturate(1.1); }
     button[type="submit"]:active { transform: scale(0.98); }
-
-    /* Loading state (no JS changes to original submit logic; driven by MutationObserver) */
     button[type="submit"].loading {
-      pointer-events: none;
-      opacity: 0.9;
+      pointer-events: none; opacity: 0.9;
     }
     button[type="submit"].loading::after {
-      content: "";
-      position: absolute;
-      right: 12px;
-      top: 50%;
-      width: 18px; height: 18px;
-      border-radius: 50%;
-      border: 2.5px solid rgba(255, 255, 255, 0.8);
-      border-top-color: rgba(11, 15, 28, 0.9);
-      transform: translateY(-50%);
-      animation: spin 700ms linear infinite;
+      content: ""; position: absolute; right: 12px; top: 50%;
+      width: 18px; height: 18px; border-radius: 50%;
+      border: 2.5px solid rgba(255, 255, 255, 0.8); border-top-color: rgba(11, 15, 28, 0.9);
+      transform: translateY(-50%); animation: spin 700ms linear infinite;
     }
     @keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
-    @media (prefers-reduced-motion: reduce) {
-      button[type="submit"].loading::after { animation: none; }
-    }
+    @media (prefers-reduced-motion: reduce) { button[type="submit"].loading::after { animation: none; } }
 
-    /* Focus ring (accessible) */
-    input:focus-visible,
-    button:focus-visible {
-      outline: 3px solid var(--ring);
-      outline-offset: 2px;
-    }
+    input:focus-visible, button:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }
 
     /* ======= Status Console ======= */
-    #status.status,
-    #status {
-      margin-top: 10px;
-      padding: 12px 14px 12px 16px;
-      border-radius: 12px;
-      background: var(--console-bg);
+    #status.status, #status {
+      margin-top: 10px; padding: 12px 14px 12px 16px;
+      border-radius: 12px; background: var(--console-bg);
       border-left: 3px solid var(--console-border);
       box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-      color: var(--text);
-      min-height: 56px;
-      max-height: 40vh;
-      overflow: auto;
+      color: var(--text); min-height: 56px; max-height: 40vh; overflow: auto;
     }
-    /* Reinforce success/error colors while keeping original classes intact */
     #status.success { border-left-color: var(--success); }
     #status.error   { border-left-color: var(--danger); }
 
-    /* ======= Footer Note ======= */
-    .note {
-      margin-top: 4px;
-      font-size: 0.8rem;
-      color: var(--muted);
+    /* ======= Structured Result Panel ======= */
+    .panel {
+      margin-top: 8px;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+    }
+
+    .panel h2 {
+      margin: 0 0 10px; font-size: 1.05rem; letter-spacing: 0.2px;
+    }
+
+    .summary-grid {
+      display: grid; gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .summary-item {
+      display: grid; gap: 4px; padding: 10px; border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .summary-item .label {
+      font-size: 0.8rem; color: var(--muted);
+    }
+    .summary-item .value {
+      font-weight: 600;
+    }
+
+    /* Deviation Banner */
+    .deviation {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px; border-radius: 10px; margin: 12px 0;
+      background: rgba(211,34,42,0.08);
+      border: 1px solid rgba(211,34,42,0.35);
+    }
+    .deviation .icon {
+      width: 28px; height: 28px; flex: 0 0 auto;
+      color: var(--danger);
+      filter: drop-shadow(0 2px 6px rgba(211,34,42,0.35));
+    }
+    .deviation .text { font-weight: 600; }
+
+    /* Table */
+    .table {
+      width: 100%; border-collapse: collapse; border-radius: 10px; overflow: hidden;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .table th, .table td {
+      padding: 10px 12px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .table th {
+      font-size: 0.85rem; color: var(--muted);
+      background: rgba(255,255,255,0.04);
+    }
+    .table tr:last-child td { border-bottom: none; }
+
+    .approved {
+      display: inline-flex; align-items: center; gap: 6px; font-weight: 600;
+    }
+    .approved .tick { color: #18c37e; }
+    .approved .cross { color: var(--danger); }
+
+    /* Secondary button */
+    .secondary-btn {
+      appearance: none;
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--field-border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+    }
+    .secondary-btn:hover {
+      border-color: var(--accent-1);
     }
   </style>
 </head>
@@ -345,7 +365,7 @@
       </header>
 
       <div class="content">
-        <!-- === ORIGINAL FORM (IDs preserved) — now correctly wraps styled fields === -->
+        <!-- === ORIGINAL FORM (IDs preserved) === -->
         <form id="requestForm" novalidate class="form-shell">
           <div class="field">
             <label for="employeeId">Employee ID</label>
@@ -368,11 +388,17 @@
           <div class="actions">
             <button type="submit">Submit</button>
             <span class="note" aria-hidden="true">Submitting shows a spinner and logs the response below.</span>
+            <button id="openStructuredView" type="button" class="secondary-btn" title="Open in separate tab">Open structured view</button>
           </div>
         </form>
 
         <!-- Preserve the ARIA live region and original inline style -->
         <pre id="status" class="status" aria-live="polite" style="white-space: pre-wrap;"></pre>
+
+        <!-- Structured rendering container -->
+        <section id="structuredResult" class="panel" aria-label="Parsed result" hidden>
+          <!-- Filled dynamically -->
+        </section>
       </div>
     </section>
   </main>
@@ -458,10 +484,8 @@
             data = await res.json();
             console.log('[Response] JSON:', data);
           } else {
-            // Fallback for non-JSON responses
             const text = await res.text();
             console.log('[Response] Text:', text);
-            // Try to display text; if it looks like JSON, format it
             try { data = JSON.parse(text); } catch { data = { raw: text }; }
           }
 
@@ -476,10 +500,9 @@
     });
   </script>
 
-  <!-- === Minimal extra script for visuals & floating labels (non-blocking, IDs unchanged) === -->
+  <!-- === Visuals: spinner + floating labels (unchanged IDs) === -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Floating label "has-value" state
       const fields = document.querySelectorAll('.field');
       fields.forEach(field => {
         const input = field.querySelector('input');
@@ -496,7 +519,6 @@
         update();
       });
 
-      // Spinner & disabled state controlled via status changes (no changes to original submit logic)
       const statusEl = document.getElementById('status');
       const submitBtn = document.querySelector('button[type="submit"]');
 
@@ -513,7 +535,177 @@
     });
   </script>
 
-  <!-- === Original success/error classes preserved (can be extended by styles above) === -->
+  <!-- === Structured rendering logic (parses #status JSON, renders panel; lets you open output.html) === -->
+  <script>
+    (function() {
+      const statusEl = document.getElementById('status');
+      const container = document.getElementById('structuredResult');
+      const openBtn = document.getElementById('openStructuredView');
+
+      const safeParse = (text) => { try { return JSON.parse(text); } catch { return null; } };
+
+      const fmtAmt = (n, currencyText) => {
+        if (typeof n !== 'number') return '-';
+        const s = n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+        return currencyText ? `${s} ${currencyText}` : s;
+      };
+
+      const tickSVG = '<svg class="tick" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M9.0 16.2L4.8 12l-1.4 1.4 5.6 5.6L21 7l-1.4-1.4z"/></svg>';
+      const crossSVG = '<svg class="cross" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M18.3 5.71 12 12l6.3 6.29-1.41 1.41L10.59 13.41 4.3 19.7 2.89 18.29 9.17 12 2.89 5.71 4.3 4.3l6.29 6.29 6.29-6.29z"/></svg>';
+
+      function render(data) {
+        if (!data || typeof data !== 'object') { container.hidden = true; container.innerHTML = ''; return; }
+
+        const res = data.result || {};
+        const currencyText = res['Currency'] || (res.Authenticity?.DocumentMetadata ? res.Authenticity.DocumentMetadata.Currency : undefined);
+
+        const schoolName = res['School Name'] || res.Authenticity?.DocumentMetadata?.Issuer || '-';
+        const depName    = res['Dependents Name'] || '-';
+        const term       = res.Authenticity?.DocumentMetadata?.['Academic Year'] || res['Term'] || '';
+        const amtWords   = res.Authenticity?.DocumentMetadata?.AmountInWords || '-';
+
+        const invoiceTotal   = res.Deviation?.InvoiceTotal ?? res['Total Fee'];
+        const approvedTotal  = res['TotalFeeApp'];
+        const hasDeviation   = !!res.Deviation?.HasDeviation;
+        const difference     = res.Deviation?.Difference;
+        const notes          = res.Authenticity?.ValidationChecks?.Notes;
+
+        const items = Array.isArray(res['Fee Items']) ? res['Fee Items'] : [];
+
+        const headerHTML = `
+          <h2>Parsed Result</h2>
+          <div class="summary-grid" role="list">
+            <div class="summary-item" role="listitem">
+              <span class="label">School Name</span>
+              <span class="value">${escapeHTML(schoolName)}</span>
+            </div>
+            <div class="summary-item" role="listitem">
+              <span class="label">Dependent's Name</span>
+              <span class="value">${escapeHTML(depName)}</span>
+            </div>
+            ${term ? `
+            <div class="summary-item" role="listitem">
+              <span class="label">Academic Year / Term</span>
+              <span class="value">${escapeHTML(term)}</span>
+            </div>` : ''}
+            <div class="summary-item" role="listitem">
+              <span class="label">Total Amount (Invoice)</span>
+              <span class="value">${fmtAmt(invoiceTotal, currencyText)}</span>
+            </div>
+            <div class="summary-item" role="listitem">
+              <span class="label">Approved Total</span>
+              <span class="value">${fmtAmt(approvedTotal, currencyText)}</span>
+            </div>
+            <div class="summary-item" role="listitem">
+              <span class="label">Amount (in words)</span>
+              <span class="value">${escapeHTML(amtWords)}</span>
+            </div>
+          </div>
+        `;
+
+        const deviationHTML = hasDeviation ? `
+          <div class="deviation" role="alert" aria-live="polite">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="11" fill="none" stroke="currentColor" stroke-width="2"></circle>
+              <path d="M8 8l8 8M16 8l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+            </svg>
+            <div class="text">
+              Deviation detected: Difference = ${fmtAmt(difference, currencyText)}.
+              ${notes ? `<div class="help" style="margin-top:4px;">${escapeHTML(notes)}</div>` : ''}
+            </div>
+          </div>
+        ` : '';
+
+        const rowsHTML = items.map(i => {
+          const name = i['Item Name'];
+          const amt  = i['Item Amount'];
+          const ex   = (i['ExcludeFlag'] || '').toUpperCase() === 'Y';
+          const approvedLabel = ex ? 'Excluded' : 'Approved';
+          const icon = ex ? crossSVG : tickSVG;
+          const iconClass = ex ? 'cross' : 'tick';
+          const aria = ex ? 'Not approved (excluded)' : 'Approved (included)';
+          return `
+            <tr>
+              <td>${escapeHTML(name)}</td>
+              <td>${fmtAmt(Number(amt), currencyText)}</td>
+              <td>
+                <span class="approved ${iconClass}" aria-label="${aria}" title="${approvedLabel}">
+                  ${icon} ${approvedLabel}
+                </span>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        const tableHTML = `
+          <div style="margin-top: 6px;">
+            <table class="table" role="table" aria-label="Fee items">
+              <thead>
+                <tr>
+                  <th scope="col">Fee Item Name</th>
+                  <th scope="col">Fee Item Amount</th>
+                  <th scope="col">Approved</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rowsHTML || `<tr><td colspan="3">No fee items found.</td></tr>`}
+              </tbody>
+            </table>
+          </div>
+        `;
+
+        container.innerHTML = headerHTML + deviationHTML + tableHTML;
+        container.hidden = false;
+      }
+
+      function escapeHTML(str) {
+        if (str == null) return '-';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      // Observe #status content; render when JSON appears
+      if (statusEl) {
+        const observer = new MutationObserver(() => {
+          const txt = (statusEl.textContent || '').trim();
+          const data = safeParse(txt);
+          if (data && typeof data === 'object') {
+            try {
+              render(data);
+              sessionStorage.setItem('lastResponse', txt);
+            } catch (err) {
+              console.error('[Render] Error:', err);
+              container.hidden = true;
+              container.innerHTML = '';
+            }
+          } else {
+            // Hide during "Submitting..." or plain error text
+            container.hidden = true;
+            container.innerHTML = '';
+          }
+        });
+        observer.observe(statusEl, { childList: true, characterData: true, subtree: true, attributes: true });
+      }
+
+      // Open separate view (output.html) using sessionStorage
+      if (openBtn) {
+        openBtn.addEventListener('click', () => {
+          const json = sessionStorage.getItem('lastResponse');
+          if (!json) {
+            alert('No parsed response available yet.');
+            return;
+          }
+          window.open('output.html', '_blank', 'noopener,noreferrer');
+        });
+      }
+    })();
+  </script>
+
+  <!-- === Original success/error classes preserved === -->
   <style>
     .success { color: #0a7; }
     .error   { color: #c00; }
