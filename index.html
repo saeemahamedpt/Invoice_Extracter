@@ -345,8 +345,8 @@
       </header>
 
       <div class="content">
-        <!-- === ORIGINAL FORM (IDs preserved) wrapped for styling === -->
-        <div class="form-shell">
+        <!-- === ORIGINAL FORM (IDs preserved) — now correctly wraps styled fields === -->
+        <form id="requestForm" novalidate class="form-shell">
           <div class="field">
             <label for="employeeId">Employee ID</label>
             <input id="employeeId" name="employeeId" type="text" required aria-describedby="employeeIdHelp" placeholder=" " />
@@ -369,7 +369,7 @@
             <button type="submit">Submit</button>
             <span class="note" aria-hidden="true">Submitting shows a spinner and logs the response below.</span>
           </div>
-        </div>
+        </form>
 
         <!-- Preserve the ARIA live region and original inline style -->
         <pre id="status" class="status" aria-live="polite" style="white-space: pre-wrap;"></pre>
@@ -479,57 +479,7 @@
   <!-- === Minimal extra script for visuals & floating labels (non-blocking, IDs unchanged) === -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Wrap the existing form without altering IDs: we only enhance visuals.
-      // Create a container around the original form if it isn't present yet.
-      (function wrapOriginalForm() {
-        const originalForm = document.getElementById('requestForm');
-        if (!originalForm) {
-          // If no original form is present (in case of server-side templating),
-          // do nothing. The visual wrapper already contains styled fields above.
-          return;
-        }
-        // If the original form exists, we keep it hidden but accessible for its JS,
-        // or move our styled inputs into it. To avoid changing behavior, we progressively
-        // enhance the original form's children with classes for styling.
-        originalForm.classList.add('form-shell'); // reuse the same visual grid
-        // Add field wrappers if not already present
-        const children = Array.from(originalForm.children);
-        children.forEach(node => {
-          if (node.tagName === 'LABEL') {
-            const next = node.nextElementSibling;
-            if (next && (next.tagName === 'INPUT' || next.tagName === 'SELECT' || next.tagName === 'TEXTAREA')) {
-              // Create field wrapper
-              const wrapper = document.createElement('div');
-              wrapper.className = 'field';
-              node.after(wrapper);
-              wrapper.appendChild(node);
-              wrapper.appendChild(next);
-              // Append a contextual help element
-              const help = document.createElement('small');
-              help.className = 'help';
-              if (next.id === 'employeeId') help.id = 'employeeIdHelp', help.textContent = 'Use your internal Employee ID (e.g., 12345).', next.setAttribute('aria-describedby', help.id), next.setAttribute('placeholder', ' ');
-              if (next.id === 'requestNumber') help.id = 'requestNumberHelp', help.textContent = 'Enter the ticket/reference number.', next.setAttribute('aria-describedby', help.id), next.setAttribute('placeholder', ' ');
-              if (next.id === 'attachment') help.id = 'attachmentHelp', help.textContent = 'Max 5 MB. Accepted by your backend as-is.', next.setAttribute('aria-describedby', help.id);
-              wrapper.appendChild(help);
-            }
-          }
-        });
-        // Move the submit button into an actions container for styling
-        const submitBtn = originalForm.querySelector('button[type="submit"]');
-        if (submitBtn && !submitBtn.parentElement.classList.contains('actions')) {
-          const actions = document.createElement('div');
-          actions.className = 'actions';
-          submitBtn.replaceWith(actions);
-          actions.appendChild(submitBtn);
-          const note = document.createElement('span');
-          note.className = 'note';
-          note.setAttribute('aria-hidden', 'true');
-          note.textContent = 'Submitting shows a spinner and logs the response below.';
-          actions.appendChild(note);
-        }
-      })();
-
-      // Floating label "has-value" state and accessible focus styling
+      // Floating label "has-value" state
       const fields = document.querySelectorAll('.field');
       fields.forEach(field => {
         const input = field.querySelector('input');
@@ -556,7 +506,6 @@
           const isSubmitting = txt === 'submitting...';
           submitBtn.classList.toggle('loading', isSubmitting);
           submitBtn.disabled = isSubmitting;
-          // Restore when success or error
           if (!isSubmitting) submitBtn.disabled = false;
         });
         obs.observe(statusEl, { childList: true, characterData: true, subtree: true, attributes: true });
@@ -570,5 +519,3 @@
     .error   { color: #c00; }
   </style>
 </body>
-</html>
-
