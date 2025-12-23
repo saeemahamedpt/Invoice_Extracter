@@ -406,9 +406,10 @@
   </main>
   </details>
 <!-- INAYAHS WORKSHEET GENERATOR SECTION BEGIN --->
-  <details>
+  
+<details>
   <summary>Inayah's Practice Sheet Generator - Click to Expand/Collapse Content</summary>
-<main class="app" aria-label="Saeems Weekend Projects">
+  <main class="app" aria-label="Saeems Weekend Projects">
     <section class="card" role="region" aria-labelledby="title">
       <header class="brand">
         <!-- Minimal inline SVG circuit icon -->
@@ -433,8 +434,249 @@
         </div>
       </header>
 
+      <!-- ===== Generator UI ===== -->
+      <form id="generatorForm" class="panel" aria-labelledby="form-title">
+        <h2 id="form-title">Generate PDF</h2>
+
+        <label for="querytext">Search Text</label>
+        <input
+          type="text"
+          id="querytext"
+          name="querytext"
+          placeholder="Identify vowels and consonants KG1"
+          required
+          autocomplete="off"
+        />
+
+        <label for="secret">Secret Key</label>
+        <input
+          type="password"
+          id="secret"
+          name="secret"
+          placeholder="Enter secret key"
+          required
+          autocomplete="off"
+          aria-describedby="secretStatus"
+        />
+        <small id="secretStatus" role="status" aria-live="polite"></small>
+
+        <button id="generateBtn" type="submit" disabled>
+          <span class="spinner" aria-hidden="true"></span>
+          Generate PDF
+        </button>
+
+        <div id="msg" class="msg" role="status" aria-live="polite"></div>
+      </form>
+
+    </section>
   </main>
-  </details>
+</details>
+
+<style>
+  /* Minimal styling */
+  .app { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; padding: 1rem; }
+  .card { max-width: 760px; margin: 0 auto; border: 1px solid #e3e3e3; border-radius: 10px; padding: 1rem 1.2rem; background: #fff; }
+  .brand { display: flex; align-items: center; gap: 12px; border-bottom: 1px dashed #e3e3e3; padding-bottom: .8rem; margin-bottom: 1rem; }
+  .logo { width: 48px; height: 48px; }
+  .panel { display: grid; gap: 10px; }
+  label { font-weight: 600; }
+  input[type="text"], input[type="password"] {
+    padding: .65rem .8rem; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem;
+  }
+  #generateBtn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: .7rem 1rem; border: none; border-radius: 8px;
+    background: linear-gradient(90deg, #00e5ff, #7c4dff); color: white; font-weight: 700;
+    cursor: pointer; transition: filter .2s;
+  }
+  #generateBtn[disabled] { filter: grayscale(.6); cursor: not-allowed; }
+  .spinner {
+    width: 1rem; height: 1rem; border: 2px solid rgba(255,255,255,.5); border-top-color: #fff; border-radius: 50%;
+    animation: sp .9s linear infinite; display: none;
+  }
+  #generateBtn.loading .spinner { display: inline-block; }
+  .msg { min-height: 1.2rem; color: #333; }
+  .msg.error { color: #d32f2f; }
+  .msg.success { color: #2e7d32; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+</style>
+
+<script>
+(function() {
+  // --- Configure these ---
+  const API_URL = "/api/generate"; // If the page is served from the same Vercel project. Otherwise: "https://YOUR_VERCEL_PROJECT_URL/api/generate"
+  const SECRET_SOURCE_URL = "https://raw.githubusercontent.com/saeemahamedpt/saeemahamedpt/main/secrets/secret.sha256.txt";
+  const SECRET_IS_HASHED = true; // set to false if your secret file contains the plain secret
+  const MAX_ATTEMPTS = 3;        // simple client-side rate-limit
+  const LOCKOUT_MS = 60_000;     // lock UI for 60s after too many invalid tries
+
+  // --- DOM ---
+  const form = document.getElementById("generatorForm");
+  const queryInput = document.getElementById("querytext");
+  const secretInput = document.getElementById("secret");
+  const statusEl = document.getElementById("secretStatus");
+  const btn = document.getElementById("generateBtn");
+  const msg = document.getElementById("msg");
+
+  let fetchedSecret = null;
+  let attempts = 0;
+  let lockedUntil = 0;
+
+  // Fetch secret (hash or plain) from GitHub portfolio
+  async function fetchSecretFromGitHub() {
+    try {
+      const res = await fetch(SECRET_SOURCE_URL, { cache: "no-store" });
+      if (!res.ok) throw new Error("Failed to fetch secret source");
+      const text = (await res.text()).trim();
+      fetchedSecret = text;
+      statusEl.textContent = "Secret source loaded.";
+    } catch (err) {
+      statusEl.textContent = "Could not load secret source.";
+      console.error(err);
+    }
+  }
+
+  // SHA-256 helper
+  async function sha256Hex(str) {
+    const enc = new TextEncoder().encode(str);
+    const hash = await crypto.subtle.digest("SHA-256", enc);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2,"0")).join("");
+  }
+
+  // Validate secret (client-side)
+  async function isSecretValid(input) {
+    if (!fetchedSecret) return false;
+    if (SECRET_IS_HASHED) {
+      const h = await sha256Hex(input);
+      return h === fetchedSecret;
+    } else {
+      return input === fetchedSecret;
+    }
+  }
+
+  // UI lockout if too many invalid attempts
+  function updateLockState() {
+    const now = Date.now();
+    const locked = now < lockedUntil;
+    btn.disabled = locked || !queryInput.value.trim() || !secretInput.value.trim();
+    statusEl.textContent = locked
+      ? `Too many invalid attempts. Try again in ${Math.ceil((lockedUntil - now)/1000)}s.`
+      : statusEl.textContent;
+  }
+
+  // Enable/disable button dynamically
+  async function onFieldChange() {
+    msg.textContent = "";
+    const qOk = !!queryInput.value.trim();
+    const sVal = secretInput.value.trim();
+    const locked = Date.now() < lockedUntil;
+
+    let sOk = false;
+    if (sVal && fetchedSecret) {
+      sOk = await isSecretValid(sVal);
+      statusEl.textContent = sOk ? "Secret looks valid." : "Secret not valid.";
+    } else {
+      statusEl.textContent = fetchedSecret ? "Enter secret." : "Loading secret source…";
+    }
+    btn.disabled = locked || !qOk || !sOk;
+  }
+
+  // Submit handler
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    msg.className = "msg";
+    msg.textContent = "";
+
+    if (Date.now() < lockedUntil) {
+      msg.classList.add("error");
+      msg.textContent = "Locked due to repeated invalid attempts. Please wait.";
+      return;
+    }
+
+    const querytext = queryInput.value.trim();
+    const secret = secretInput.value.trim();
+    if (!querytext || !secret) return;
+
+    // Final client-side validation
+    const valid = await isSecretValid(secret);
+    if (!valid) {
+      attempts++;
+      if (attempts >= MAX_ATTEMPTS) {
+        lockedUntil = Date.now() + LOCKOUT_MS;
+      }
+      await onFieldChange();
+      msg.classList.add("error");
+      msg.textContent = "Invalid secret.";
+      return;
+    }
+
+    // Ready: call API
+    btn.classList.add("loading");
+    btn.disabled = true;
+    try {
+      const payload = {
+        querytext,
+        num_images: 6,
+        orientation: "auto",
+        margin_ratio: 0.02,
+        filename: "kids_google_images.pdf"
+      };
+
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // Optional: send secret for server-side validation (if you implement it)
+          "X-Secret-Key": secret
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const ct = res.headers.get("content-type") || "";
+      if (!res.ok) {
+        let detail = "";
+        try { detail = (await res.json()).detail || ""; } catch {}
+        throw new Error(`API error ${res.status}: ${detail}`);
+      }
+      if (!ct.includes("application/pdf")) {
+        // If server returned JSON instead, show it
+        const data = await res.json();
+        throw new Error(data.error || "Unexpected response type");
+      }
+
+      // Download PDF
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "kids_google_images.pdf";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      msg.classList.add("success");
+      msg.textContent = "PDF generated and downloaded.";
+
+    } catch (err) {
+      console.error(err);
+      msg.classList.add("error");
+      msg.textContent = err.message || "Failed to generate PDF.";
+    } finally {
+      btn.classList.remove("loading");
+      await onFieldChange(); // re-enable button if still valid & not locked
+    }
+  });
+
+  // Live enable/disable
+  queryInput.addEventListener("input", onFieldChange);
+  secretInput.addEventListener("input", onFieldChange);
+
+  // Init
+  fetchSecretFromGitHub().then(onFieldChange);
+})();
+</script>
+
   
   <!-- INAYAHS WORKSHEET GENERATOR SECTION END --->
   <!-- === ORIGINAL SCRIPT BLOCK (UNMODIFIED) === -->
