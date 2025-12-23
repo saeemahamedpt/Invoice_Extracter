@@ -443,7 +443,7 @@
           type="text"
           id="querytext"
           name="querytext"
-          placeholder="Identify vowels and consonants KG1"
+          placeholder="Enter Search Text to be Image searched for"
           required
           autocomplete="off"
         />
@@ -625,9 +625,7 @@
       const res = await fetch(API_URL, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          // Optional: send secret for server-side validation (if you implement it)
-          "X-Secret-Key": secret
+          "Content-Type": "application/json"
         },
         body: JSON.stringify(payload)
       });
