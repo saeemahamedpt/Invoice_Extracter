@@ -505,7 +505,7 @@
 (function() {
   // --- Configure these ---
   const API_URL = "https://exercise-sheet-maker1.vercel.app/api/generate"; // If the page is served from the same Vercel project. Otherwise: "https://YOUR_VERCEL_PROJECT_URL/api/generate"
-  const SECRET_SOURCE_URL = "https://raw.githubusercontent.com/saeemahamedpt/Invoice_Extracter/refs/heads/main/secrets/secret.sha256.txt?token=GHSAT0AAAAAADRCWCOS72F5AY4QU5XXQDZU2KKP5HQ";
+  const SECRET_SOURCE_URL = "https://raw.githubusercontent.com/saeemahamedpt/Invoice_Extracter/refs/heads/main/secrets/secret.sha256.txt";
   const SECRET_IS_HASHED = true; // set to false if your secret file contains the plain secret
   const MAX_ATTEMPTS = 3;        // simple client-side rate-limit
   const LOCKOUT_MS = 60_000;     // lock UI for 60s after too many invalid tries
